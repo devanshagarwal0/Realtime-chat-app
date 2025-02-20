@@ -3,10 +3,15 @@ import { GrAttachment } from "react-icons/gr";
 import { IoSend } from "react-icons/io5";
 import { RiEmojiStickerLine } from "react-icons/ri";
 import EmojiPicker from "emoji-picker-react";
+import { useAppStore } from "@/store";
+import { useSocket } from "@/context/SocketContext";
+
 function MessageBar() {
   const emojiRef = useRef();
+  const socket = useSocket();
   const [message, setMessage] = useState("");
   const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
+  const { selectedChatType, selectedChatData, userInfo } = useAppStore();
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -19,10 +24,26 @@ function MessageBar() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [emojiRef]);
+
   const handleAddEmoji = (emoji) => {
     setMessage((msg) => msg + emoji.emoji);
+    setEmojiPickerOpen(false); // Close the emoji picker after selecting an emoji
   };
-  const handleSendMessage = async () => {};
+
+  const handleSendMessage = async () => {
+    if (message.trim() === "") return; // Prevent sending empty messages
+    if (selectedChatType === "contact") {
+      socket.emit("sendMessage", {
+        sender: userInfo.id,
+        content: message,
+        recipient: selectedChatData._id,
+        messageType: "text",
+        fileUrl: undefined,
+      });
+      setMessage(""); // Clear the message input after sending
+    }
+  };
+
   return (
     <div className="h-[10vh] bg-[#1c1d25] flex justify-center items-center px-8 mb-6 gap-6">
       <div className="flex-1 flex bg-[#2a2b33] rounded-md items-center gap-5 pr-5">
@@ -43,14 +64,15 @@ function MessageBar() {
           >
             <RiEmojiStickerLine className="text-2xl" />
           </button>
-          <div className="absolute bottom-16 right-0" ref={emojiRef}>
-            <EmojiPicker
-              theme="dark"
-              open={emojiPickerOpen}
-              onEmojiClick={handleAddEmoji}
-              autoFocusSearch={false}
-            />
-          </div>
+          {emojiPickerOpen && (
+            <div className="absolute bottom-16 right-0" ref={emojiRef}>
+              <EmojiPicker
+                theme="dark"
+                onEmojiClick={handleAddEmoji}
+                autoFocusSearch={false}
+              />
+            </div>
+          )}
         </div>
       </div>
       <button

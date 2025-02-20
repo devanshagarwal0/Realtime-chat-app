@@ -23,6 +23,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { HOST } from "@/utils/constants";
 import { useAppStore } from "@/store";
+import { getColor } from "@/lib/utils.js";
+
 
 function NewDM() {
   const {setSelectedChatType,setSelectedChatData} =useAppStore();
