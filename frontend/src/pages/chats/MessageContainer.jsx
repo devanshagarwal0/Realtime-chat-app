@@ -5,7 +5,7 @@ import moment from "moment";
 import { useEffect, useRef, useState } from "react";
 import { MdFolderZip } from "react-icons/md";
 import { IoMdArrowRoundDown } from "react-icons/io";
-import {IoCloseSharp} from "react-icons/io5"
+import { IoCloseSharp } from "react-icons/io5";
 
 function MessageContainer() {
   const scrollRef = useRef();
@@ -15,6 +15,8 @@ function MessageContainer() {
     userInfo,
     selectedChatMessages,
     setSelectedChatMessages,
+    setIsDownloading,
+    setFileDownloadProgress,
   } = useAppStore();
   const [showImage, setShowImage] = useState(false);
   const [imageURL, setImageUrl] = useState(null);
@@ -50,8 +52,14 @@ function MessageContainer() {
   };
 
   const downloadFile = async (url) => {
+    setIsDownloading(true);
+    setFileDownloadProgress(0);
     const response = await apiClient.get(`${HOST}/${url}`, {
       responseType: "blob",
+      onDownloadProgress: (ProgressEvent) => {
+        const { loaded, total } = ProgressEvent;
+        setFileDownloadProgress(Math.round((loaded * 100) / total));
+      },
     });
     const urlBlob = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement("a");
@@ -61,6 +69,8 @@ function MessageContainer() {
     link.click();
     link.remove();
     window.URL.revokeObjectURL(urlBlob);
+    setIsDownloading(false);
+    setFileDownloadProgress(0);
   };
   const renderMessage = () => {
     let lastDate = null;
@@ -148,7 +158,7 @@ function MessageContainer() {
       {renderMessage()}
       <div ref={scrollRef} />
       {showImage && (
-        <div className="fixed z-[1000] top-0 left-0 h-[100vh] w-[100vw] flex items-center justify-center backdrop-blur-lg">
+        <div className="fixed z-[900] top-0 left-0 h-[100vh] w-[100vw] flex items-center justify-center backdrop-blur-lg">
           <div>
             <img
               src={`${HOST}/${imageURL}`}
