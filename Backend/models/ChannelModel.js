@@ -5,7 +5,7 @@ const channelSchema = mongoose.Schema({
     type: String,
     required: true,
   },
-  members: [{ type: mongoose.Schema.ObjectId, ref: "Users", required: true }],
+  members: [{ type: mongoose.Schema.ObjectId, ref: "User", required: true }],
   admin: {
     type: mongoose.Schema.ObjectId,
     ref: "Users",
@@ -31,6 +31,7 @@ channelSchema.pre("save", function (next) {
 
 channelSchema.pre("findOneAndUpdate", function (next) {
   this.set({ updatedAt: Date.now() });
+  next();
 });
 
 const Channel = mongoose.model("Channels", channelSchema);

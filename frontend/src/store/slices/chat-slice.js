@@ -7,8 +7,8 @@ export const createChatSlice = (set, get) => ({
   isDownloading: false,
   fileUploadProgress: 0,
   fileDownloadProgress: 0,
-  channels:[],
-  setChannels:(channels)=>set({channels}),
+  channels: [],
+  setChannels: (channels) => set({ channels }),
   setIsUploading: (isUploading) => set({ isUploading }),
   setIsDownloading: (isDownloading) => set({ isDownloading }),
   setFileUploadProgress: (fileUploadProgress) => set({ fileUploadProgress }),
@@ -21,9 +21,9 @@ export const createChatSlice = (set, get) => ({
   setDirectMessagesContacts: (directMessagesContacts) =>
     set({ directMessagesContacts }),
 
-  addChannel:(channel)=>{
-    const channels= get().channels;
-    set({channels:[channel,...channels]});
+  addChannel: (channel) => {
+    const channels = get().channels;
+    set({ channels: [channel, ...channels] });
   },
   closeChat: () =>
     set({
@@ -51,5 +51,41 @@ export const createChatSlice = (set, get) => ({
         },
       ],
     });
+  },
+  addChannelInChannelList: (message) => {
+    const channels = get().channels;
+    const data = channels.find((channel) => channel._id === message.channelId);
+    const index = channels.findIndex(
+      (channel) => channel._id === message.channelId
+    );
+    if (index !== -1 && index !== undefined) {
+      channels.splice(index, 1);
+      channels.unshift(data);
+    }
+  },
+  addContactsInDMContacts: (message) => {
+    const userId = get().userInfo.id;
+
+    const fromId =
+      message.sender._id === userId
+        ? message.recipient._id
+        : message.sender._id;
+
+    const fromData =
+      message.sender._id === userId ? message.recipient : message.sender;
+
+    const dmContacts = get().directMessagesContacts;
+    const data = dmContacts.find((contact) => contact._id === fromId);
+    const index = dmContacts.findIndex((contact) => contact._id === fromId);
+
+    if (index !== -1 && index !== undefined) {
+      dmContacts.splice(index, 1);
+      dmContacts.unshift(data);
+    } else {
+      // If contact doesn't exist, add it to the top
+      dmContacts.unshift(fromData);
+    }
+
+    set({ directMessagesContacts: dmContacts });
   },
 });

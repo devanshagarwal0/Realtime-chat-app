@@ -33,10 +33,31 @@ export const getUserChannels = async (req, res) => {
   try {
     const userId = new mongoose.Types.ObjectId(req.userId);
     const channels = await Channel.find({
-      $or: [{ admin: userId }, { member: userId }],
+      $or: [{ admin: userId }, { members: userId }],
     }).sort({ updatedAt: -1 });
 
     return res.status(201).json({ channels });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Internal sever error");
+  }
+};
+
+export const getChannelMessages = async (req, res) => {
+  try {
+    const { channelId } = req.params;
+    const channel = await Channel.findById(channelId).populate({
+      path: "messages",
+      populate: {
+        path: "sender",
+        select: "firstName lastName email _id image color",
+      },
+    });
+    if (!channel) {
+      return res.status(404).send("Channel not found.");
+    }
+    const messages = channel.messages;
+    return res.status(200).json({ messages });
   } catch (error) {
     console.log(error);
     res.status(500).send("Internal sever error");
