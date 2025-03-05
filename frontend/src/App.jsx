@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Auth from "./pages/auths/auth";
+import Auth from "./pages/auths/Auth.jsx";
 import Chat from "./pages/chats/Chat";
 import Profile from "./pages/profiles/Profile";
 import { useAppStore } from "./store";
